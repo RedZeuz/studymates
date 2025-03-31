@@ -1,4 +1,3 @@
-
 import { UserProfile, Match, Message } from "./models";
 
 // Generate a list of 15 mock user profiles
@@ -325,11 +324,20 @@ export const getPotentialMatches = (currentUserId: string): UserProfile[] => {
   
   if (!currentUser) return [];
   
-  // Filter out already matched users and the current user
-  return mockUsers.filter(user => 
-    user.id !== currentUserId && 
-    !currentUser.matches.includes(user.id)
-  );
+  // Filter out the current user
+  let potentialMatches = mockUsers.filter(user => user.id !== currentUserId);
+  
+  // Check if we have any potential matches that aren't already matched
+  const unmatched = potentialMatches.filter(user => !currentUser.matches.includes(user.id));
+  
+  // If there are unmatched users, return those
+  if (unmatched.length > 0) {
+    return unmatched;
+  }
+  
+  // Otherwise, just return all other users (except current user)
+  // In a real app, you might want to reset matches or show a message
+  return potentialMatches;
 };
 
 // Function to get matches for the current user
