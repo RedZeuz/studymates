@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 
@@ -8,6 +7,8 @@ interface User {
   email: string;
   profileCompleted: boolean;
   avatar?: string;
+  strengths?: string[];
+  weaknesses?: string[];
 }
 
 interface AuthContextType {
@@ -33,7 +34,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for saved user on initial load
   useEffect(() => {
     const savedUser = localStorage.getItem("studySwipeUser");
     
@@ -49,15 +49,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  // Mock login function
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // Mock response - in a real app this would come from a backend
       if (email === "test@example.com" && password === "password") {
         const user: User = {
           id: "user-1",
@@ -74,7 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       
-      // For demo purposes, create a new user if credentials aren't the test ones
       const newUser: User = {
         id: `user-${Math.random().toString(36).substring(2, 9)}`,
         name: email.split('@')[0],
@@ -100,12 +96,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Mock signup function
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       const newUser: User = {
@@ -133,7 +127,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Logout function
   const logout = () => {
     localStorage.removeItem("studySwipeUser");
     setCurrentUser(null);
@@ -143,7 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Update user data
   const updateUser = (userData: Partial<User>) => {
     if (!currentUser) return;
     
