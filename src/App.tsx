@@ -35,10 +35,10 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
-            {/* Profile creation is now a protected route to ensure only logged-in users can access it */}
+            {/* Profile creation is still accessible but not forced */}
             <Route path="/create-profile" element={<ProtectedRoute><ProfileCreation /></ProtectedRoute>} />
             
-            {/* Main app routes that require both login and completed profile */}
+            {/* Main app routes that now only require login */}
             <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
               <Route path="/home" element={<Home />} />
               <Route path="/matches" element={<Matches />} />

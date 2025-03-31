@@ -6,7 +6,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  profileCompleted: boolean;
+  profileCompleted?: boolean; // Make this optional since we're not enforcing it
   avatar?: string;
   strengths?: string[];
   weaknesses?: string[];
@@ -95,18 +95,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       } else {
         // For demo purposes, create a new user if not found
+        // No longer setting profileCompleted to false
         const newUser: User = {
           id: `user-${Math.random().toString(36).substring(2, 9)}`,
           name: email.split('@')[0],
           email: email,
-          profileCompleted: false,
         };
         
         setCurrentUser(newUser);
         localStorage.setItem("studySwipeUser", JSON.stringify(newUser));
         toast({
           title: "Account created",
-          description: "Please complete your profile",
+          description: "Welcome to StudySwipeMates!",
         });
       }
     } catch (error) {
@@ -127,11 +127,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
+      // No longer setting profileCompleted to false
       const newUser: User = {
         id: `user-${Math.random().toString(36).substring(2, 9)}`,
         name,
         email,
-        profileCompleted: false,
       };
       
       // Store user in localStorage (simulating a database)
@@ -149,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem("studySwipeUser", JSON.stringify(newUser));
       toast({
         title: "Account created",
-        description: "Please complete your profile",
+        description: "Welcome to StudySwipeMates!",
       });
     } catch (error) {
       console.error("Signup error:", error);

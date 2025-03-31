@@ -24,11 +24,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to profile creation if profile not completed
-  // But only if not already on the profile creation page
-  if (!currentUser.profileCompleted && location.pathname !== "/create-profile") {
-    return <Navigate to="/create-profile" replace />;
-  }
+  // No longer check for profile completion or redirect to profile creation
+  // Just show children (the protected content) for any logged in user
 
   return <>{children}</>;
 };
