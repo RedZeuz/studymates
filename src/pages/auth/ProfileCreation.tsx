@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -68,7 +67,7 @@ const ProfileCreation = () => {
   };
 
   const removeWeakness = (subject: string) => {
-    setWeaknesses(weaknesses.filter(w => w !== weakness));
+    setWeaknesses(weaknesses.filter(w => w !== subject));
   };
 
   // Toggle study preference

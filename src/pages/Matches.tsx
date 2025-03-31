@@ -82,7 +82,7 @@ const Matches = () => {
           if (!matchedUser) return null;
           
           // Find the common subjects (current user's weaknesses that match the other user's strengths)
-          const commonSubjects = currentUser?.weaknesses.filter(
+          const commonSubjects = currentUser?.weaknesses?.filter(
             subject => matchedUser.strengths.includes(subject)
           ) || [];
           
