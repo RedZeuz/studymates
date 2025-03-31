@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 
@@ -61,6 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: "Test User",
           email: "test@example.com",
           profileCompleted: true,
+          strengths: ["Mathematics", "Computer Science"],
+          weaknesses: ["History", "Literature"]
         };
         setCurrentUser(user);
         localStorage.setItem("studySwipeUser", JSON.stringify(user));
@@ -71,19 +74,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       
-      const newUser: User = {
-        id: `user-${Math.random().toString(36).substring(2, 9)}`,
-        name: email.split('@')[0],
-        email: email,
-        profileCompleted: false,
-      };
+      // Check if user exists in localStorage (simulating a database)
+      const allUsers = localStorage.getItem("allStudySwipeUsers");
+      let users: Record<string, User> = {};
       
-      setCurrentUser(newUser);
-      localStorage.setItem("studySwipeUser", JSON.stringify(newUser));
-      toast({
-        title: "Login successful",
-        description: "Please complete your profile",
-      });
+      if (allUsers) {
+        users = JSON.parse(allUsers);
+      }
+      
+      // Find user by email
+      const foundUser = Object.values(users).find(user => user.email === email);
+      
+      if (foundUser) {
+        // In a real app, we would verify the password hash here
+        setCurrentUser(foundUser);
+        localStorage.setItem("studySwipeUser", JSON.stringify(foundUser));
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+      } else {
+        // For demo purposes, create a new user if not found
+        const newUser: User = {
+          id: `user-${Math.random().toString(36).substring(2, 9)}`,
+          name: email.split('@')[0],
+          email: email,
+          profileCompleted: false,
+        };
+        
+        setCurrentUser(newUser);
+        localStorage.setItem("studySwipeUser", JSON.stringify(newUser));
+        toast({
+          title: "Account created",
+          description: "Please complete your profile",
+        });
+      }
     } catch (error) {
       console.error("Login error:", error);
       toast({
@@ -108,6 +133,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         profileCompleted: false,
       };
+      
+      // Store user in localStorage (simulating a database)
+      const allUsers = localStorage.getItem("allStudySwipeUsers");
+      let users: Record<string, User> = {};
+      
+      if (allUsers) {
+        users = JSON.parse(allUsers);
+      }
+      
+      users[newUser.id] = newUser;
+      localStorage.setItem("allStudySwipeUsers", JSON.stringify(users));
       
       setCurrentUser(newUser);
       localStorage.setItem("studySwipeUser", JSON.stringify(newUser));
@@ -142,6 +178,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updatedUser = { ...currentUser, ...userData };
     setCurrentUser(updatedUser);
     localStorage.setItem("studySwipeUser", JSON.stringify(updatedUser));
+    
+    // Update user in "database" too
+    const allUsers = localStorage.getItem("allStudySwipeUsers");
+    if (allUsers) {
+      const users: Record<string, User> = JSON.parse(allUsers);
+      users[updatedUser.id] = updatedUser;
+      localStorage.setItem("allStudySwipeUsers", JSON.stringify(users));
+    }
   };
 
   const value = {

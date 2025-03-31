@@ -1,5 +1,5 @@
 
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
 interface ProtectedRouteProps {
@@ -8,6 +8,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { currentUser, isLoading } = useAuth();
+  const location = useLocation();
 
   // Show loading state
   if (isLoading) {
@@ -24,7 +25,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   // Redirect to profile creation if profile not completed
-  if (!currentUser.profileCompleted && window.location.pathname !== "/create-profile") {
+  // But only if not already on the profile creation page
+  if (!currentUser.profileCompleted && location.pathname !== "/create-profile") {
     return <Navigate to="/create-profile" replace />;
   }
 
