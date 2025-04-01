@@ -16,7 +16,7 @@ import ChatRoom from "./pages/ChatRoom";
 import NotFound from "./pages/NotFound";
 
 // Providers and Layouts
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./context/auth";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import MainLayout from "./components/layouts/MainLayout";
 

@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 import { Button } from "@/components/ui/button";
 import { Layers, BookOpen, Users, MessageCircle } from "lucide-react";
 

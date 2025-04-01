@@ -1,34 +1,13 @@
 
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
+import { AuthState } from "./types";
 import { UserProfile } from "@/data/models";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { getCurrentUserProfile, createUserProfile } from "@/data/supabaseService";
 import { Session } from "@supabase/supabase-js";
 
-interface AuthContextType {
-  currentUser: UserProfile | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<UserProfile | null>;
-  signup: (name: string, email: string, password: string) => Promise<UserProfile | null>;
-  logout: () => Promise<void>;
-  updateUser: (userData: Partial<UserProfile>) => Promise<UserProfile | null>;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  currentUser: null,
-  isLoading: true,
-  isAuthenticated: false,
-  login: async () => null,
-  signup: async () => null,
-  logout: async () => {},
-  updateUser: async () => null
-});
-
-export const useAuth = () => useContext(AuthContext);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const useAuthProvider = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
@@ -194,15 +173,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value = {
+  return {
     currentUser,
     isLoading,
     isAuthenticated: !!currentUser,
+    session,
     login,
     signup,
     logout,
     updateUser
   };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
