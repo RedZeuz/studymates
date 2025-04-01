@@ -245,9 +245,10 @@ export const getUserMatches = async (userId: string): Promise<Match[]> => {
             }
           : undefined;
 
+        // Create Match object with users as tuple to fix type error
         return {
           id: match.id,
-          users: [match.user1_id, match.user2_id],
+          users: [match.user1_id, match.user2_id] as [string, string],
           createdAt: new Date(match.created_at),
           lastMessage
         };
