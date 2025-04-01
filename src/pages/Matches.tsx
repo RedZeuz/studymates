@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 import { Match, UserProfile } from "@/data/models";
 import { getUserMatches, getUserById } from "@/data/mockData";
 import { Card, CardContent } from "@/components/ui/card";

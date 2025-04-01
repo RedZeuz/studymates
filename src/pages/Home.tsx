@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useRef } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 import { UserProfile } from "@/data/models";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
