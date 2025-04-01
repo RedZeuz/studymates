@@ -9,13 +9,375 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      demo_preferences: {
+        Row: {
+          id: string
+          preference: string
+          profile_id: string
+        }
+        Insert: {
+          id?: string
+          preference: string
+          profile_id: string
+        }
+        Update: {
+          id?: string
+          preference?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "demo_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_profiles: {
+        Row: {
+          avatar: string | null
+          bio: string | null
+          created_at: string
+          email: string
+          id: string
+          major: string | null
+          name: string
+          updated_at: string
+          year: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          major?: string | null
+          name: string
+          updated_at?: string
+          year?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          major?: string | null
+          name?: string
+          updated_at?: string
+          year?: string | null
+        }
+        Relationships: []
+      }
+      demo_strengths: {
+        Row: {
+          id: string
+          profile_id: string
+          subject: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          subject: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_strengths_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "demo_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_weaknesses: {
+        Row: {
+          id: string
+          profile_id: string
+          subject: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          subject: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_weaknesses_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "demo_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          created_at: string
+          id: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          match_id: string
+          read: boolean
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          match_id: string
+          read?: boolean
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          bio: string | null
+          created_at: string
+          email: string
+          id: string
+          major: string | null
+          name: string
+          profile_completed: boolean | null
+          updated_at: string
+          year: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string
+          email: string
+          id: string
+          major?: string | null
+          name: string
+          profile_completed?: boolean | null
+          updated_at?: string
+          year?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          major?: string | null
+          name?: string
+          profile_completed?: boolean | null
+          updated_at?: string
+          year?: string | null
+        }
+        Relationships: []
+      }
+      strengths: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strengths_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          preference: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          preference: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          preference?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swipe_actions: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          target_user_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          target_user_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          target_user_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swipe_actions_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swipe_actions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weaknesses: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weaknesses_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_match: {
+        Args: {
+          user1: string
+          user2: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

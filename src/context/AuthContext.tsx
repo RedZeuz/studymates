@@ -1,200 +1,207 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { UserProfile } from "@/data/models";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  profileCompleted?: boolean; // Make this optional since we're not enforcing it
-  avatar?: string;
-  strengths?: string[];
-  weaknesses?: string[];
-}
+import { getCurrentUserProfile, createUserProfile } from "@/data/supabaseService";
+import { Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
-  currentUser: User | null;
+  currentUser: UserProfile | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-  updateUser: (userData: Partial<User>) => void;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<UserProfile | null>;
+  signup: (email: string, password: string, name: string) => Promise<UserProfile | null>;
+  logout: () => Promise<void>;
+  updateUser: (userData: Partial<UserProfile>) => Promise<UserProfile | null>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  currentUser: null,
+  isLoading: true,
+  isAuthenticated: false,
+  login: async () => null,
+  signup: async () => null,
+  logout: async () => {},
+  updateUser: async () => null
+});
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
 
+  // Check for existing session on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem("studySwipeUser");
-    
-    if (savedUser) {
+    const checkSession = async () => {
       try {
-        setCurrentUser(JSON.parse(savedUser));
+        // Get current session
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        setSession(currentSession);
+
+        if (currentSession?.user) {
+          // Get user profile from our database
+          const userProfile = await getCurrentUserProfile();
+          setCurrentUser(userProfile);
+        }
       } catch (error) {
-        console.error("Failed to parse saved user:", error);
-        localStorage.removeItem("studySwipeUser");
+        console.error("Error checking session:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    
-    setIsLoading(false);
+    };
+
+    checkSession();
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        console.log("Auth state changed:", event);
+        setSession(newSession);
+        
+        if (event === "SIGNED_IN" && newSession?.user) {
+          // Get user profile when signed in
+          const userProfile = await getCurrentUserProfile();
+          setCurrentUser(userProfile);
+        } else if (event === "SIGNED_OUT") {
+          setCurrentUser(null);
+        }
+      }
+    );
+
+    return () => {
+      // Clean up subscription
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    
+  const login = async (email: string, password: string): Promise<UserProfile | null> => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get the user profile
+      const userProfile = await getCurrentUserProfile();
       
-      if (email === "test@example.com" && password === "password") {
-        const user: User = {
-          id: "user-1",
-          name: "Test User",
-          email: "test@example.com",
-          profileCompleted: true,
-          strengths: ["Mathematics", "Computer Science"],
-          weaknesses: ["History", "Literature"]
-        };
-        setCurrentUser(user);
-        localStorage.setItem("studySwipeUser", JSON.stringify(user));
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        return;
+      if (userProfile) {
+        setCurrentUser(userProfile);
+        return userProfile;
       }
       
-      // Check if user exists in localStorage (simulating a database)
-      const allUsers = localStorage.getItem("allStudySwipeUsers");
-      let users: Record<string, User> = {};
-      
-      if (allUsers) {
-        users = JSON.parse(allUsers);
-      }
-      
-      // Find user by email
-      const foundUser = Object.values(users).find(user => user.email === email);
-      
-      if (foundUser) {
-        // In a real app, we would verify the password hash here
-        setCurrentUser(foundUser);
-        localStorage.setItem("studySwipeUser", JSON.stringify(foundUser));
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-      } else {
-        // For demo purposes, create a new user if not found
-        // No longer setting profileCompleted to false
-        const newUser: User = {
-          id: `user-${Math.random().toString(36).substring(2, 9)}`,
-          name: email.split('@')[0],
-          email: email,
-        };
-        
-        setCurrentUser(newUser);
-        localStorage.setItem("studySwipeUser", JSON.stringify(newUser));
-        toast({
-          title: "Account created",
-          description: "Welcome to StudySwipeMates!",
-        });
-      }
-    } catch (error) {
+      return null;
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
-        title: "Login failed",
-        description: "Please check your credentials and try again.",
+        title: "Login Failed",
+        description: error.message || "Failed to login. Please check your credentials."
       });
-    } finally {
-      setIsLoading(false);
+      return null;
     }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
-    setIsLoading(true);
-    
+  const signup = async (email: string, password: string, name: string): Promise<UserProfile | null> => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // No longer setting profileCompleted to false
-      const newUser: User = {
-        id: `user-${Math.random().toString(36).substring(2, 9)}`,
+      // Sign up with Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data.user) {
+        throw new Error("User creation failed");
+      }
+
+      // Create the user profile
+      const userProfile = await createUserProfile(data.user.id, {
         name,
         email,
-      };
-      
-      // Store user in localStorage (simulating a database)
-      const allUsers = localStorage.getItem("allStudySwipeUsers");
-      let users: Record<string, User> = {};
-      
-      if (allUsers) {
-        users = JSON.parse(allUsers);
-      }
-      
-      users[newUser.id] = newUser;
-      localStorage.setItem("allStudySwipeUsers", JSON.stringify(users));
-      
-      setCurrentUser(newUser);
-      localStorage.setItem("studySwipeUser", JSON.stringify(newUser));
-      toast({
-        title: "Account created",
-        description: "Welcome to StudySwipeMates!",
+        profileCompleted: false
       });
-    } catch (error) {
+
+      if (userProfile) {
+        setCurrentUser(userProfile);
+        return userProfile;
+      }
+
+      return null;
+    } catch (error: any) {
       console.error("Signup error:", error);
       toast({
         variant: "destructive",
-        title: "Signup failed",
-        description: "Please try again later.",
+        title: "Signup Failed",
+        description: error.message || "Failed to create account. Please try again."
       });
-    } finally {
-      setIsLoading(false);
+      return null;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("studySwipeUser");
-    setCurrentUser(null);
-    toast({
-      title: "Logged out",
-      description: "You've been successfully logged out.",
-    });
+  const logout = async (): Promise<void> => {
+    try {
+      // Sign out with Supabase
+      await supabase.auth.signOut();
+      setCurrentUser(null);
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out."
+      });
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      toast({
+        variant: "destructive",
+        title: "Logout Failed",
+        description: error.message || "Failed to logout. Please try again."
+      });
+    }
   };
 
-  const updateUser = (userData: Partial<User>) => {
-    if (!currentUser) return;
-    
-    const updatedUser = { ...currentUser, ...userData };
-    setCurrentUser(updatedUser);
-    localStorage.setItem("studySwipeUser", JSON.stringify(updatedUser));
-    
-    // Update user in "database" too
-    const allUsers = localStorage.getItem("allStudySwipeUsers");
-    if (allUsers) {
-      const users: Record<string, User> = JSON.parse(allUsers);
-      users[updatedUser.id] = updatedUser;
-      localStorage.setItem("allStudySwipeUsers", JSON.stringify(users));
+  const updateUser = async (userData: Partial<UserProfile>): Promise<UserProfile | null> => {
+    try {
+      if (!currentUser) {
+        throw new Error("No authenticated user");
+      }
+
+      // Update profile with Supabase
+      const updatedProfile = await createUserProfile(currentUser.id, userData);
+      
+      if (updatedProfile) {
+        setCurrentUser(updatedProfile);
+        return updatedProfile;
+      }
+      
+      return null;
+    } catch (error: any) {
+      console.error("Profile update error:", error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error.message || "Failed to update profile. Please try again."
+      });
+      return null;
     }
   };
 
   const value = {
     currentUser,
     isLoading,
+    isAuthenticated: !!currentUser,
     login,
     signup,
     logout,
-    updateUser,
+    updateUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

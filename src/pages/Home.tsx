@@ -2,13 +2,13 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { UserProfile } from "@/data/models";
-import { getPotentialMatches, swipeUser } from "@/data/mockData";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, X, BookOpen } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { getDemoProfiles, recordSwipeAction } from "@/data/supabaseService";
 
 const Home = () => {
   const { currentUser } = useAuth();
@@ -16,16 +16,34 @@ const Home = () => {
   const [potentialMatches, setPotentialMatches] = useState<UserProfile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<null | "left" | "right">(null);
+  const [loading, setLoading] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [offsetX, setOffsetX] = useState(0);
 
   useEffect(() => {
-    if (currentUser) {
-      const matches = getPotentialMatches(currentUser.id);
-      setPotentialMatches(matches);
+    async function fetchPotentialMatches() {
+      if (currentUser) {
+        try {
+          setLoading(true);
+          // For now, we'll use demo profiles as potential matches
+          const profiles = await getDemoProfiles();
+          setPotentialMatches(profiles);
+        } catch (error) {
+          console.error("Error fetching potential matches:", error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to load potential matches. Please try again later."
+          });
+        } finally {
+          setLoading(false);
+        }
+      }
     }
+
+    fetchPotentialMatches();
   }, [currentUser]);
 
   // Handle end of potential matches
@@ -38,14 +56,14 @@ const Home = () => {
     }
   }, [currentIndex, potentialMatches.length]);
 
-  const handleLike = () => {
-    if (currentIndex >= potentialMatches.length) return;
+  const handleLike = async () => {
+    if (currentIndex >= potentialMatches.length || !currentUser) return;
     
     const targetUser = potentialMatches[currentIndex];
     setSwipeDirection("right");
     
-    if (currentUser) {
-      const match = swipeUser(currentUser.id, targetUser.id, "like");
+    try {
+      const match = await recordSwipeAction(currentUser.id, targetUser.id, "like");
       
       // If a match was created
       if (match) {
@@ -59,6 +77,8 @@ const Home = () => {
           ),
         });
       }
+    } catch (error) {
+      console.error("Error recording like:", error);
     }
     
     // Wait for animation to complete before moving to next card
@@ -68,14 +88,16 @@ const Home = () => {
     }, 300);
   };
 
-  const handleSkip = () => {
-    if (currentIndex >= potentialMatches.length) return;
+  const handleSkip = async () => {
+    if (currentIndex >= potentialMatches.length || !currentUser) return;
     
     const targetUser = potentialMatches[currentIndex];
     setSwipeDirection("left");
     
-    if (currentUser) {
-      swipeUser(currentUser.id, targetUser.id, "skip");
+    try {
+      await recordSwipeAction(currentUser.id, targetUser.id, "skip");
+    } catch (error) {
+      console.error("Error recording skip:", error);
     }
     
     // Wait for animation to complete before moving to next card
@@ -125,7 +147,17 @@ const Home = () => {
   // Get the current profile to display
   const currentProfile = potentialMatches[currentIndex];
 
-  // Show empty state if no more profiles
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="h-[80vh] flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p className="text-muted-foreground">Loading potential study partners...</p>
+      </div>
+    );
+  }
+
+  // Show empty state if no profiles or end reached
   if (!currentProfile) {
     return (
       <div className="h-[80vh] flex flex-col items-center justify-center">

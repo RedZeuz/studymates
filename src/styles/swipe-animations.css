@@ -1,0 +1,39 @@
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100vw) rotate(-30deg);
+    opacity: 0;
+  }
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100vw) rotate(30deg);
+    opacity: 0;
+  }
+}
+
+.animate-slide-left {
+  animation: slideLeft 0.5s forwards;
+}
+
+.animate-slide-right {
+  animation: slideRight 0.5s forwards;
+}
+
+.swipe-card {
+  transition: transform 0.3s ease;
+  touch-action: none;
+}
+
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
