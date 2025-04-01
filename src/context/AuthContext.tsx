@@ -11,7 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<UserProfile | null>;
-  signup: (email: string, password: string, name: string) => Promise<UserProfile | null>;
+  signup: (name: string, email: string, password: string) => Promise<UserProfile | null>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<UserProfile>) => Promise<UserProfile | null>;
 }
@@ -105,11 +105,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Login Failed",
         description: error.message || "Failed to login. Please check your credentials."
       });
-      return null;
+      throw error;
     }
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<UserProfile | null> => {
+  const signup = async (name: string, email: string, password: string): Promise<UserProfile | null> => {
     try {
       // Sign up with Supabase
       const { data, error } = await supabase.auth.signUp({
@@ -145,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Signup Failed",
         description: error.message || "Failed to create account. Please try again."
       });
-      return null;
+      throw error;
     }
   };
 

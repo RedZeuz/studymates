@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Layers, Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -22,6 +23,11 @@ const Signup = () => {
     e.preventDefault();
     setError("");
     
+    if (!name || !email || !password) {
+      setError("All fields are required");
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -35,11 +41,23 @@ const Signup = () => {
     setIsSubmitting(true);
     
     try {
-      await signup(name, email, password);
-      navigate("/create-profile");
-    } catch (error) {
+      const result = await signup(name, email, password);
+      if (result) {
+        navigate("/create-profile");
+        toast({
+          title: "Account created!",
+          description: "Your account has been created successfully."
+        });
+      } else {
+        setError("Failed to create account. Please try again.");
+      }
+    } catch (error: any) {
       console.error("Signup error:", error);
-      setError("Failed to create account. Please try again.");
+      if (error?.message?.includes("invalid format")) {
+        setError("Please enter a valid email address.");
+      } else {
+        setError(error?.message || "Failed to create account. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
