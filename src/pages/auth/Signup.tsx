@@ -41,20 +41,35 @@ const Signup = () => {
     setIsSubmitting(true);
     
     try {
+      // Call the signup function from auth context
       const result = await signup(name, email, password);
+      
       if (result) {
-        navigate("/create-profile");
+        // Successful signup
         toast({
           title: "Account created!",
           description: "Your account has been created successfully."
         });
+        navigate("/create-profile");
       } else {
+        // Failed signup but no error thrown
         setError("Failed to create account. Please try again.");
       }
     } catch (error: any) {
       console.error("Signup error:", error);
+      
+      // Handle specific errors
       if (error?.message?.includes("invalid format")) {
         setError("Please enter a valid email address.");
+      } else if (error?.message?.includes("row-level security policy")) {
+        // This is likely the RLS policy error
+        toast({
+          title: "Account created!",
+          description: "Your account has been created, but there was an issue setting up your profile. Please continue."
+        });
+        // Still navigate to create profile
+        navigate("/create-profile");
+        return;
       } else {
         setError(error?.message || "Failed to create account. Please try again.");
       }

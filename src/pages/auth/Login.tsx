@@ -31,6 +31,7 @@ const Login = () => {
     try {
       const result = await login(email, password);
       if (result) {
+        // Successful login
         navigate("/home");
         toast({
           title: "Welcome back!",
